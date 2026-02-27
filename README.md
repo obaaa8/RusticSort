@@ -6,6 +6,23 @@
 
 RusticSort is a desktop application that automatically organizes messy folders based on smart, configurable rules. It features a wizard-style interface that guides users through the entire process.
 
+## Screenshots
+
+### Welcome Screen
+![Welcome](assets/screenshots/01-welcome.png)
+
+### Step 1: Source Directory
+![Source](assets/screenshots/02-source.png)
+
+### Step 2: Sorting Rules
+![Rules](assets/screenshots/03-rules.png)
+
+### Step 3: Review & Organize
+![Summary](assets/screenshots/04-summary.png)
+
+### Result
+![Result](assets/screenshots/05-result.png)
+
 ## Features
 
 - **Wizard-style interface** - 4-step guided flow: Welcome, Source, Rules, Organize
@@ -61,6 +78,7 @@ src/
     widgets.rs      - Reusable widget components
 assets/
   strings.toml      - All user-facing text (for easy editing and translation)
+  screenshots/      - Application screenshots
   fonts/            - Custom fonts
 ```
 
