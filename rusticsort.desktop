@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=RusticSort
+Comment=Smart File Organizer
+Exec=RusticSort
+Icon=system-file-manager
+Terminal=false
+Categories=Utility;FileTools;
