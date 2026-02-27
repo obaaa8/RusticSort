@@ -4,9 +4,11 @@ use std::fs;
 
 use super::rules::SortingRule;
 
-/// Scans a directory and returns a list of files (excluding directories)
+/// Scans a directory and returns a list of files (excluding directories).
+/// Only scans the top-level files (depth = 1), not recursively.
 pub fn scan_directory<P: AsRef<Path>>(dir_path: P) -> Vec<PathBuf> {
     WalkDir::new(dir_path)
+        .max_depth(1)
         .into_iter()
         .filter_map(|e| e.ok())
         .filter(|e| e.file_type().is_file())
@@ -14,10 +16,11 @@ pub fn scan_directory<P: AsRef<Path>>(dir_path: P) -> Vec<PathBuf> {
         .collect()
 }
 
-/// Matches a file extension to a target path based on the rules.
+/// Matches a file extension to a target path based on the enabled rules.
 pub fn match_rule<'a>(extension: &str, rules: &'a [SortingRule]) -> Option<&'a str> {
     rules
         .iter()
+        .filter(|r| r.enabled)
         .find(|r| r.extension.eq_ignore_ascii_case(extension))
         .map(|r| r.target_path.as_str())
 }
@@ -36,16 +39,17 @@ pub fn get_safe_destination_path(target_dir: &Path, original_name: &str, extensi
 }
 
 /// Moves a single file based on the sorting rules.
+/// The target_path in the rule is treated as a relative folder name inside source_dir.
 /// If no rule matches, returns Ok(false).
 /// If it was moved successfully, returns Ok(true).
-pub fn organize_file(file_path: &Path, rules: &[SortingRule]) -> std::io::Result<bool> {
+pub fn organize_file(file_path: &Path, source_dir: &Path, rules: &[SortingRule]) -> std::io::Result<bool> {
     if let Some(ext) = file_path.extension().and_then(|e| e.to_str()) {
-        if let Some(target_dir_str) = match_rule(ext, rules) {
-            let target_dir = Path::new(target_dir_str);
-            
+        if let Some(target_folder_name) = match_rule(ext, rules) {
+            let target_dir = source_dir.join(target_folder_name);
+
             // Create target directory if it doesn't exist
             if !target_dir.exists() {
-                fs::create_dir_all(target_dir)?;
+                fs::create_dir_all(&target_dir)?;
             }
 
             let original_name = file_path
@@ -53,7 +57,7 @@ pub fn organize_file(file_path: &Path, rules: &[SortingRule]) -> std::io::Result
                 .and_then(|s| s.to_str())
                 .unwrap_or("unknown_file");
 
-            let dest_path = get_safe_destination_path(target_dir, original_name, ext);
+            let dest_path = get_safe_destination_path(&target_dir, original_name, ext);
 
             // Move the file
             fs::rename(file_path, &dest_path)?;
