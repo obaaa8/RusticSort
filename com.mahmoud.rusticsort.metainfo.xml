@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
-  <id>com.mahmoud.rusticsort</id>
+  <id>com.mahmoud.rusticsort.desktop</id>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>MIT</project_license>
+  <icon type="stock">com.mahmoud.rusticsort</icon>
 
   <name>RusticSort</name>
   <summary>Smart File Organizer</summary>
