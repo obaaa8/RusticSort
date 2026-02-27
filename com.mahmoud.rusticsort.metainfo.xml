@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.mahmoud.rusticsort</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+
+  <name>RusticSort</name>
+  <summary>Smart File Organizer</summary>
+  <description>
+    <p>
+      RusticSort is a desktop application that automatically organizes messy folders 
+      based on smart, configurable rules. It features a wizard-style interface that
+      guides users through the entire process.
+    </p>
+    <p>Features include:</p>
+    <ul>
+      <li>Wizard-style 4-step guided flow</li>
+      <li>Pre-configured rules for Images, Documents, Videos, Audio, Archives, and Programs</li>
+      <li>Customizable sorting rules with add, edit, and remove</li>
+      <li>Undo support to reverse file moves and clean up created directories</li>
+      <li>Safe file operations with automatic collision handling</li>
+      <li>Persistent configuration across sessions</li>
+    </ul>
+  </description>
+
+  <launchable type="desktop-id">rusticsort.desktop</launchable>
+
+  <screenshots>
+    <screenshot type="default">
+      <caption>Welcome Screen</caption>
+      <image>https://raw.githubusercontent.com/obaaa8/RusticSort/master/assets/screenshots/01-welcome.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Choose Source Directory</caption>
+      <image>https://raw.githubusercontent.com/obaaa8/RusticSort/master/assets/screenshots/02-source.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Configure Sorting Rules</caption>
+      <image>https://raw.githubusercontent.com/obaaa8/RusticSort/master/assets/screenshots/03-rules.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Review and Organize</caption>
+      <image>https://raw.githubusercontent.com/obaaa8/RusticSort/master/assets/screenshots/04-summary.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Organization Results</caption>
+      <image>https://raw.githubusercontent.com/obaaa8/RusticSort/master/assets/screenshots/05-result.png</image>
+    </screenshot>
+  </screenshots>
+
+  <url type="homepage">https://github.com/obaaa8/RusticSort</url>
+  <url type="bugtracker">https://github.com/obaaa8/RusticSort/issues</url>
+
+  <developer id="com.mahmoud">
+    <name>Mahmoud Abdelsamea</name>
+  </developer>
+
+  <content_rating type="oars-1.1" />
+
+  <categories>
+    <category>Utility</category>
+    <category>FileTools</category>
+  </categories>
+
+  <releases>
+    <release version="0.1.0" date="2026-02-27">
+      <description>
+        <p>Initial release with wizard-style interface, customizable sorting rules, undo support, and cross-platform builds.</p>
+      </description>
+    </release>
+  </releases>
+
+  <provides>
+    <binary>RusticSort</binary>
+  </provides>
+</component>

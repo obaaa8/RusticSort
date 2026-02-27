@@ -1,7 +1,7 @@
 pub mod styles;
 pub mod widgets;
 
-use iced::widget::{button, checkbox, column, container, row, scrollable, text, text_input, Space, stack};
+use iced::widget::{button, checkbox, column, container, row, scrollable, text, text_input, Space, stack, image};
 use iced::{Alignment, Color, Element, Length, Task};
 use crate::engine::rules::{SortingRule, default_rules};
 use crate::engine::organizer::{scan_directory, organize_file, undo_moves, MoveRecord};
@@ -200,7 +200,11 @@ impl RusticSortApp {
 
     fn view_welcome(&self) -> Element<Message> {
         let content = column![
-            Space::with_height(50),
+            Space::with_height(30),
+            image(image::Handle::from_bytes(include_bytes!("../../assets/icons/rusticsort-128.png").as_slice()))
+                .width(Length::Fixed(128.0))
+                .height(Length::Fixed(128.0)),
+            Space::with_height(20),
             text(S.get("app", "name")).size(36).color(Color::from_rgb(0.15, 0.15, 0.2)),
             Space::with_height(6),
             text(S.get("app", "tagline")).size(16).color(Color::from_rgb(0.45, 0.48, 0.55)),
@@ -619,11 +623,19 @@ impl RusticSortApp {
     fn view_about_modal<'a>(&self) -> Element<'a, Message> {
         let modal = container(
             column![
-                text(S.get("messages", "about_title")).size(20).color(Color::from_rgb(0.15, 0.15, 0.2)),
-                Space::with_height(10),
-                text(S.get("app", "name")).size(16).color(Color::from_rgb(0.18, 0.55, 0.82)),
-                text(S.get("app", "tagline")).size(13).color(Color::from_rgb(0.4, 0.42, 0.48)),
-                Space::with_height(8),
+                row![
+                    image(image::Handle::from_bytes(include_bytes!("../../assets/icons/rusticsort-64.png").as_slice()))
+                        .width(Length::Fixed(64.0))
+                        .height(Length::Fixed(64.0)),
+                    Space::with_width(16),
+                    column![
+                        text(S.get("messages", "about_title")).size(20).color(Color::from_rgb(0.15, 0.15, 0.2)),
+                        Space::with_height(8),
+                        text(S.get("app", "name")).size(16).color(Color::from_rgb(0.18, 0.55, 0.82)),
+                        text(S.get("app", "tagline")).size(13).color(Color::from_rgb(0.4, 0.42, 0.48)),
+                    ]
+                ].align_y(Alignment::Center),
+                Space::with_height(14),
                 text(S.get("app", "description")).size(12).color(Color::from_rgb(0.35, 0.37, 0.42)),
                 Space::with_height(12),
                 text(format!("Version: {}", S.get("app", "version"))).size(11).color(Color::from_rgb(0.5, 0.5, 0.55)),
