@@ -1,9 +1,10 @@
 pub mod engine;
 pub mod ui;
 pub mod config;
+pub mod strings;
 
 use ui::RusticSortApp;
-use iced::{application, font, Font};
+use iced::application;
 
 fn main() -> iced::Result {
     application(RusticSortApp::title, RusticSortApp::update, RusticSortApp::view)

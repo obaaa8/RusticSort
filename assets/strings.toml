@@ -1,0 +1,55 @@
+[app]
+name = "RusticSort"
+tagline = "Smart File Organizer"
+version = "v0.1.0"
+description = """Organize your messy folders automatically based on smart rules. \
+Choose a source directory, configure sorting rules, and let RusticSort \
+do the rest in seconds."""
+
+[links]
+website = "https://github.com/obaaa8/RusticSort"
+
+[developer]
+credit_label = "Made by Mahmoud Abdelsamea"
+name = "Mahmoud Abdelsamea"
+email = "obaaa8@gmail.com"
+phone = "00966509308189"
+
+[steps]
+step1_title = "Step 1: Choose Source Directory"
+step1_desc = """Select the folder that contains the files you want to organize. \
+By default, your Downloads folder is selected."""
+step2_title = "Step 2: Configure Sorting Rules"
+step2_desc = """Enable or disable rules to control which files get organized. \
+Each rule maps a file extension to a target folder inside the source directory."""
+step3_title = "Step 3: Review & Organize"
+step3_desc = "Review the summary below. When ready, click Start Organizing."
+
+[buttons]
+get_started = "Get Started"
+next = "Next"
+back = "Back"
+browse = "Browse"
+start_organizing = "Start Organizing"
+add_rule = "+ Add Rule"
+save_rules = "Save Rules"
+done = "Done"
+close = "Close"
+back_to_home = "Back to Home"
+open_folder = "Open Folder"
+cancel = "Cancel"
+confirm = "Confirm"
+
+[messages]
+ready = "Ready"
+organizing = "Organizing files..."
+organizing_wait = "Please wait while your files are being sorted."
+no_match = "No files in the source directory match any enabled rule."
+select_dir_first = "Please select a source directory first."
+no_files = "No files to organize"
+save_failed = "Failed to save"
+rules_saved = "Rules saved!"
+source_updated = "Source directory updated."
+complete_title = "Organization Complete!"
+error_title = "Error"
+about_title = "About RusticSort"

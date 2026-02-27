@@ -1,3 +1,5 @@
 PLAN.md
 plan.text
 target/
+out.txt
+compile_errors.txt
