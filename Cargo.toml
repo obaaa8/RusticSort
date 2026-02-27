@@ -9,11 +9,12 @@ authors = ["Mahmoud Abdelsamea <obaaa8@gmail.com>"]
 [package.metadata.generate-rpm]
 assets = [
     { source = "target/release/RusticSort", dest = "/usr/bin/RusticSort", mode = "755" },
-    { source = "rusticsort.desktop", dest = "/usr/share/applications/rusticsort.desktop", mode = "644" },
+    { source = "com.mahmoud.rusticsort.desktop", dest = "/usr/share/applications/com.mahmoud.rusticsort.desktop", mode = "644" },
     { source = "com.mahmoud.rusticsort.metainfo.xml", dest = "/usr/share/metainfo/com.mahmoud.rusticsort.metainfo.xml", mode = "644" },
-    { source = "assets/icons/rusticsort-48.png", dest = "/usr/share/icons/hicolor/48x48/apps/rusticsort.png", mode = "644" },
-    { source = "assets/icons/rusticsort-128.png", dest = "/usr/share/icons/hicolor/128x128/apps/rusticsort.png", mode = "644" },
-    { source = "assets/icons/rusticsort-256.png", dest = "/usr/share/icons/hicolor/256x256/apps/rusticsort.png", mode = "644" },
+    { source = "assets/icons/rusticsort-48.png", dest = "/usr/share/icons/hicolor/48x48/apps/com.mahmoud.rusticsort.png", mode = "644" },
+    { source = "assets/icons/rusticsort-64.png", dest = "/usr/share/icons/hicolor/64x64/apps/com.mahmoud.rusticsort.png", mode = "644" },
+    { source = "assets/icons/rusticsort-128.png", dest = "/usr/share/icons/hicolor/128x128/apps/com.mahmoud.rusticsort.png", mode = "644" },
+    { source = "assets/icons/rusticsort-256.png", dest = "/usr/share/icons/hicolor/256x256/apps/com.mahmoud.rusticsort.png", mode = "644" },
 ]
 
 [dependencies]

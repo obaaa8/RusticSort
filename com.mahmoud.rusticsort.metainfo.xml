@@ -23,7 +23,7 @@
     </ul>
   </description>
 
-  <launchable type="desktop-id">rusticsort.desktop</launchable>
+  <launchable type="desktop-id">com.mahmoud.rusticsort.desktop</launchable>
 
   <screenshots>
     <screenshot type="default">
