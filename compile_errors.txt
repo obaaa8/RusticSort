@@ -1,15 +1,11 @@
-    Checking rfd v0.17.2
-error[E0308]: mismatched types
-   --> /home/mahmoud/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rfd-0.17.2/src/backend/xdg_desktop_portal/portal/libdbus.rs:351:21
-    |
-13  |         (ffi::Libdbus::get().$f)
-    |         ------------------------ arguments to this function are incorrect
-...
-351 |                     signature.unwrap_or_default(),
-    |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `*const i8`, found `&CStr`
-    |
-    = note: expected raw pointer `*const i8`
-                 found reference `&CStr`
+    Checking RusticSort v0.1.0 (/home/mahmoud/projects/RusticSort)
+warning: unused import: `Settings`
+ --> src/main.rs:5:25
+  |
+5 | use iced::{application, Settings};
+  |                         ^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
 
-For more information about this error, try `rustc --explain E0308`.
-error: could not compile `rfd` (lib) due to 1 previous error
+warning: `RusticSort` (bin "RusticSort") generated 1 warning (run `cargo fix --bin "RusticSort"` to apply 1 suggestion)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.25s
