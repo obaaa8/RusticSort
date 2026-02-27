@@ -4,7 +4,9 @@ pub mod widgets;
 use iced::widget::{button, column, container, row, scrollable, text, text_input};
 use iced::{Alignment, Element, Length, Task};
 use crate::engine::rules::SortingRule;
+use crate::engine::organizer::{scan_directory, organize_file};
 use crate::config;
+use std::path::PathBuf;
 
 #[derive(Debug, Clone)]
 pub enum Message {
@@ -54,9 +56,10 @@ impl RusticSortApp {
     pub fn update(&mut self, message: Message) -> Task<Message> {
         match message {
             Message::SelectSourceDir => {
-                // Return a task to handle folder selection
-                // The actual logic will be connected in Integration stage (Stage 5)
-                Task::none()
+                Task::perform(
+                    async { rfd::AsyncFileDialog::new().pick_folder().await.map(|h| h.path().to_path_buf()) },
+                    Message::SourceDirSelected,
+                )
             }
             Message::SourceDirSelected(path_opt) => {
                 if let Some(path) = path_opt {
@@ -66,17 +69,36 @@ impl RusticSortApp {
                 Task::none()
             }
             Message::StartOrganizing => {
-                if self.source_dir.is_some() && !self.is_processing {
-                    self.is_processing = true;
-                    self.status_message = "Organizing files...".to_string();
-                    // Connect async task in Integration stage
+                if let Some(source) = self.source_dir.clone() {
+                    if !self.is_processing {
+                        self.is_processing = true;
+                        self.status_message = "Organizing files...".to_string();
+                        let rules = self.rules.clone();
+                        
+                        return Task::perform(
+                            async move {
+                                let mut success_count = 0;
+                                let files = scan_directory(&source);
+                                for file in files {
+                                    match organize_file(&file, &rules) {
+                                        Ok(true) => success_count += 1,
+                                        Ok(false) => {}, // No rule matched
+                                        Err(e) => return Err(e.to_string()),
+                                    }
+                                }
+                                Ok(success_count > 0)
+                            },
+                            Message::OrganizeCompleted,
+                        );
+                    }
                 }
                 Task::none()
             }
             Message::OrganizeCompleted(result) => {
                 self.is_processing = false;
                 match result {
-                    Ok(_) => self.status_message = "Organization complete!".to_string(),
+                    Ok(true) => self.status_message = "Organization complete! Files moved.".to_string(),
+                    Ok(false) => self.status_message = "Organization complete! No files matched the rules.".to_string(),
                     Err(e) => self.status_message = format!("Error: {}", e),
                 }
                 Task::none()
@@ -97,9 +119,14 @@ impl RusticSortApp {
                 }
                 Task::none()
             }
-            Message::SelectRuleTarget(_index) => {
-                // To be wired with rfd in Stage 5
-                Task::none()
+            Message::SelectRuleTarget(index) => {
+                Task::perform(
+                    async move { 
+                        let path = rfd::AsyncFileDialog::new().pick_folder().await.map(|h| h.path().to_path_buf());
+                        (index, path)
+                    },
+                    |(idx, path)| Message::RuleTargetSelected(idx, path),
+                )
             }
             Message::RuleTargetSelected(index, path_opt) => {
                 if let Some(path) = path_opt {
