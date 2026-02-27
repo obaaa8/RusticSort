@@ -4,6 +4,15 @@ use std::fs;
 
 use super::rules::SortingRule;
 
+/// Represents a single file move operation (for undo support)
+#[derive(Debug, Clone)]
+pub struct MoveRecord {
+    pub original_path: PathBuf,
+    pub new_path: PathBuf,
+    /// Whether the target directory was created by this operation
+    pub created_dir: Option<PathBuf>,
+}
+
 /// Scans a directory and returns a list of files (excluding directories).
 /// Only scans the top-level files (depth = 1), not recursively.
 pub fn scan_directory<P: AsRef<Path>>(dir_path: P) -> Vec<PathBuf> {
@@ -26,7 +35,6 @@ pub fn match_rule<'a>(extension: &str, rules: &'a [SortingRule]) -> Option<&'a s
 }
 
 /// Computes a safe file path to avoid overwriting existing files.
-/// Example: if `document.pdf` exists, tries `document_1.pdf`.
 pub fn get_safe_destination_path(target_dir: &Path, original_name: &str, extension: &str) -> PathBuf {
     let mut candidate = target_dir.join(format!("{}.{}", original_name, extension));
     let mut counter = 1;
@@ -39,18 +47,20 @@ pub fn get_safe_destination_path(target_dir: &Path, original_name: &str, extensi
 }
 
 /// Moves a single file based on the sorting rules.
-/// The target_path in the rule is treated as a relative folder name inside source_dir.
-/// If no rule matches, returns Ok(false).
-/// If it was moved successfully, returns Ok(true).
-pub fn organize_file(file_path: &Path, source_dir: &Path, rules: &[SortingRule]) -> std::io::Result<bool> {
+/// Returns Ok(Some(MoveRecord)) if moved, Ok(None) if no rule matched.
+/// Tracks whether a new directory was created for undo support.
+pub fn organize_file(file_path: &Path, source_dir: &Path, rules: &[SortingRule]) -> std::io::Result<Option<MoveRecord>> {
     if let Some(ext) = file_path.extension().and_then(|e| e.to_str()) {
         if let Some(target_folder_name) = match_rule(ext, rules) {
             let target_dir = source_dir.join(target_folder_name);
 
-            // Create target directory if it doesn't exist
-            if !target_dir.exists() {
+            // Track if we created this directory
+            let created_dir = if !target_dir.exists() {
                 fs::create_dir_all(&target_dir)?;
-            }
+                Some(target_dir.clone())
+            } else {
+                None
+            };
 
             let original_name = file_path
                 .file_stem()
@@ -59,11 +69,53 @@ pub fn organize_file(file_path: &Path, source_dir: &Path, rules: &[SortingRule])
 
             let dest_path = get_safe_destination_path(&target_dir, original_name, ext);
 
-            // Move the file
             fs::rename(file_path, &dest_path)?;
 
-            return Ok(true);
+            return Ok(Some(MoveRecord {
+                original_path: file_path.to_path_buf(),
+                new_path: dest_path,
+                created_dir,
+            }));
         }
     }
-    Ok(false)
+    Ok(None)
+}
+
+/// Undoes a list of move operations by moving files back to their original paths.
+/// Also removes directories that were created by the program (if now empty).
+/// Returns the number of successfully restored files.
+pub fn undo_moves(records: &[MoveRecord]) -> std::io::Result<usize> {
+    let mut restored = 0;
+    let mut dirs_to_remove: Vec<PathBuf> = Vec::new();
+
+    // Restore files in reverse order
+    for record in records.iter().rev() {
+        if record.new_path.exists() {
+            if let Some(parent) = record.original_path.parent() {
+                if !parent.exists() {
+                    fs::create_dir_all(parent)?;
+                }
+            }
+            fs::rename(&record.new_path, &record.original_path)?;
+            restored += 1;
+
+            // Mark created directories for cleanup
+            if let Some(dir) = &record.created_dir {
+                if !dirs_to_remove.contains(dir) {
+                    dirs_to_remove.push(dir.clone());
+                }
+            }
+        }
+    }
+
+    // Remove directories that were created by the program (only if empty)
+    for dir in &dirs_to_remove {
+        if dir.exists() && dir.is_dir() {
+            if fs::read_dir(dir)?.next().is_none() {
+                fs::remove_dir(dir)?;
+            }
+        }
+    }
+
+    Ok(restored)
 }

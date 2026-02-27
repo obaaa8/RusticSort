@@ -4,7 +4,7 @@ pub mod widgets;
 use iced::widget::{button, checkbox, column, container, row, scrollable, text, text_input, Space, stack};
 use iced::{Alignment, Color, Element, Length, Task};
 use crate::engine::rules::{SortingRule, default_rules};
-use crate::engine::organizer::{scan_directory, organize_file};
+use crate::engine::organizer::{scan_directory, organize_file, undo_moves, MoveRecord};
 use crate::config;
 use crate::strings::S;
 
@@ -28,7 +28,9 @@ pub enum Message {
     SaveRules,
 
     StartOrganize,
-    OrganizeCompleted(Result<Vec<String>, String>),
+    OrganizeCompleted(Result<Vec<MoveRecord>, String>),
+    UndoMoves,
+    UndoCompleted(Result<usize, String>),
 
     DismissError,
     GoHome,
@@ -52,7 +54,7 @@ pub struct RusticSortApp {
     step: usize,
     source_dir: Option<std::path::PathBuf>,
     rules: Vec<SortingRule>,
-    moved_files: Vec<String>,
+    move_records: Vec<MoveRecord>,
     modal: Modal,
 }
 
@@ -66,7 +68,7 @@ impl Default for RusticSortApp {
             step: 0,
             source_dir: dirs::download_dir(),
             rules,
-            moved_files: Vec::new(),
+            move_records: Vec::new(),
             modal: Modal::None,
         }
     }
@@ -86,7 +88,7 @@ impl RusticSortApp {
             Message::GoToStep(s) => { self.step = s; Task::none() }
             Message::NextStep => { self.step += 1; Task::none() }
             Message::PrevStep => { if self.step > 0 { self.step -= 1; } Task::none() }
-            Message::GoHome => { self.step = 0; self.moved_files.clear(); Task::none() }
+            Message::GoHome => { self.step = 0; self.move_records.clear(); Task::none() }
 
             Message::SelectSourceDir => {
                 Task::perform(
@@ -116,16 +118,16 @@ impl RusticSortApp {
                     let rules = self.rules.clone();
                     Task::perform(
                         async move {
-                            let mut moved = Vec::new();
+                            let mut records = Vec::new();
                             let files = scan_directory(&source);
                             for file in files {
                                 match organize_file(&file, &source, &rules) {
-                                    Ok(true) => { moved.push(file.file_name().unwrap_or_default().to_string_lossy().to_string()); }
-                                    Ok(false) => {}
+                                    Ok(Some(record)) => { records.push(record); }
+                                    Ok(None) => {}
                                     Err(e) => return Err(e.to_string()),
                                 }
                             }
-                            Ok(moved)
+                            Ok(records)
                         },
                         Message::OrganizeCompleted,
                     )
@@ -138,7 +140,30 @@ impl RusticSortApp {
             Message::OrganizeCompleted(result) => {
                 self.modal = Modal::None;
                 match result {
-                    Ok(moved) => { self.moved_files = moved; self.step = 4; }
+                    Ok(records) => { self.move_records = records; self.step = 4; }
+                    Err(e) => { self.modal = Modal::Error(e); }
+                }
+                Task::none()
+            }
+
+            Message::UndoMoves => {
+                self.modal = Modal::Processing;
+                let records = self.move_records.clone();
+                Task::perform(
+                    async move {
+                        undo_moves(&records).map_err(|e| e.to_string())
+                    },
+                    Message::UndoCompleted,
+                )
+            }
+
+            Message::UndoCompleted(result) => {
+                self.modal = Modal::None;
+                match result {
+                    Ok(count) => {
+                        self.move_records.clear();
+                        self.modal = Modal::Error(format!("{} - {} file(s)", S.get("messages", "undo_success"), count));
+                    }
                     Err(e) => { self.modal = Modal::Error(e); }
                 }
                 Task::none()
@@ -422,10 +447,11 @@ impl RusticSortApp {
     // ========== STEP 4: Result ==========
 
     fn view_result(&self) -> Element<Message> {
-        let count = self.moved_files.len();
+        let count = self.move_records.len();
 
         let mut file_list = column![].spacing(2);
-        for name in self.moved_files.iter().take(20) {
+        for record in self.move_records.iter().take(20) {
+            let name = record.original_path.file_name().unwrap_or_default().to_string_lossy().to_string();
             file_list = file_list.push(
                 text(format!("  [OK] {}", name)).size(12).color(Color::from_rgb(0.2, 0.55, 0.2))
             );
@@ -435,6 +461,17 @@ impl RusticSortApp {
                 text(format!("  ... and {} more", count - 20)).size(12).color(Color::from_rgb(0.4, 0.5, 0.4))
             );
         }
+
+        let undo_btn = if !self.move_records.is_empty() {
+            button(text(S.get("messages", "undo_btn")).size(13))
+                .on_press(Message::UndoMoves)
+                .style(styles::danger_button)
+                .padding([9, 20])
+        } else {
+            button(text(S.get("messages", "undo_btn")).size(13))
+                .style(styles::danger_button)
+                .padding([9, 20])
+        };
 
         let content = column![
             Space::with_height(40),
@@ -454,7 +491,9 @@ impl RusticSortApp {
                     .on_press(Message::GoHome)
                     .style(styles::outline_button)
                     .padding([9, 20]),
-                Space::with_width(16),
+                Space::with_width(10),
+                undo_btn,
+                Space::with_width(10),
                 button(text(S.get("buttons", "open_folder")).size(13))
                     .on_press(Message::OpenFolder)
                     .style(styles::primary_button)
