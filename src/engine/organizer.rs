@@ -110,10 +110,8 @@ pub fn undo_moves(records: &[MoveRecord]) -> std::io::Result<usize> {
 
     // Remove directories that were created by the program (only if empty)
     for dir in &dirs_to_remove {
-        if dir.exists() && dir.is_dir() {
-            if fs::read_dir(dir)?.next().is_none() {
-                fs::remove_dir(dir)?;
-            }
+        if dir.exists() && dir.is_dir() && fs::read_dir(dir)?.next().is_none() {
+            fs::remove_dir(dir)?;
         }
     }
 
