@@ -183,3 +183,34 @@ pub fn ghost_button(_theme: &Theme, status: button::Status) -> button::Style {
         _ => base,
     }
 }
+
+pub fn dropzone_container(is_dragging: bool) -> container::Style {
+    let (bg, border_color) = if is_dragging {
+        (Color::from_rgb(0.92, 0.96, 1.0), ACCENT)
+    } else {
+        (Color::from_rgb(0.97, 0.98, 0.99), Color::from_rgb(0.82, 0.84, 0.87))
+    };
+    
+    container::Style {
+        background: Some(Background::Color(bg)),
+        border: Border {
+            color: border_color,
+            width: 2.0,
+            radius: 12.0.into(),
+        },
+        shadow: Default::default(),
+        text_color: Some(if is_dragging { ACCENT } else { Color::from_rgb(0.5, 0.52, 0.56) }),
+    }
+}
+pub fn drag_overlay(_theme: &Theme) -> container::Style {
+    container::Style {
+        background: Some(Background::Color(Color::from_rgba(0.92, 0.96, 1.0, 0.9))),
+        border: Border {
+            color: ACCENT,
+            width: 6.0,
+            radius: 16.0.into(),
+        },
+        shadow: Default::default(),
+        text_color: None,
+    }
+}

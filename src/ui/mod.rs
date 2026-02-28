@@ -18,6 +18,9 @@ pub enum Message {
 
     SelectSourceDir,
     SourceDirSelected(Option<std::path::PathBuf>),
+    FileDropped(std::path::PathBuf),
+    FileHovered,
+    FileLeft,
 
     AddRule,
     ToggleRule(usize, bool),
@@ -56,6 +59,7 @@ pub struct RusticSortApp {
     rules: Vec<SortingRule>,
     move_records: Vec<MoveRecord>,
     modal: Modal,
+    is_dragging: bool,
 }
 
 impl Default for RusticSortApp {
@@ -70,6 +74,7 @@ impl Default for RusticSortApp {
             rules,
             move_records: Vec::new(),
             modal: Modal::None,
+            is_dragging: false,
         }
     }
 }
@@ -81,6 +86,32 @@ impl RusticSortApp {
 
     pub fn title(&self) -> String {
         S.get("app", "name").to_string()
+    }
+
+    pub fn subscription(&self) -> iced::Subscription<Message> {
+        iced::event::listen_with(|event, _status, _window_id| {
+            if let iced::Event::Window(win_ev) = event {
+                // VERBOSE LOGGING
+                println!("Iced Window Event captured: {:?}", win_ev);
+                match win_ev {
+                    iced::window::Event::FileDropped(path) => {
+                        println!("==> FileDropped({:?})", path);
+                        Some(Message::FileDropped(path))
+                    }
+                    iced::window::Event::FileHovered(path) => {
+                        println!("==> FileHovered({:?})", path);
+                        Some(Message::FileHovered)
+                    }
+                    iced::window::Event::FilesHoveredLeft => {
+                        println!("==> FilesHoveredLeft");
+                        Some(Message::FileLeft)
+                    }
+                    _ => None,
+                }
+            } else {
+                None
+            }
+        })
     }
 
     pub fn update(&mut self, message: Message) -> Task<Message> {
@@ -97,6 +128,16 @@ impl RusticSortApp {
                 )
             }
             Message::SourceDirSelected(p) => { if let Some(path) = p { self.source_dir = Some(path); } Task::none() }
+            Message::FileHovered => { self.is_dragging = true; Task::none() }
+            Message::FileLeft => { self.is_dragging = false; Task::none() }
+            Message::FileDropped(path) => { 
+                self.is_dragging = false;
+                if path.is_dir() { 
+                    self.source_dir = Some(path);
+                    if self.step == 0 { self.step = 1; }
+                } 
+                Task::none() 
+            }
 
             Message::AddRule => { self.rules.push(SortingRule::new("", "", "")); Task::none() }
             Message::ToggleRule(i, v) => { if let Some(r) = self.rules.get_mut(i) { r.enabled = v; } Task::none() }
@@ -187,12 +228,34 @@ impl RusticSortApp {
             _ => self.view_welcome(),
         };
 
+        let content_with_overlay: Element<Message> = if self.is_dragging {
+            let overlay = container(
+                column![
+                    text("🗂️").size(80).center(),
+                    Space::with_height(20),
+                    text(S.get("messages", "ready")).size(48).color(Color::from_rgb(0.18, 0.55, 0.82)).center(),
+                    Space::with_height(10),
+                    text("Drop your folder anywhere to analyze it").size(22).color(Color::from_rgb(0.4, 0.45, 0.5)).center(),
+                ]
+                .align_x(Alignment::Center)
+            )
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .center_x(Length::Fill)
+            .center_y(Length::Fill)
+            .style(styles::drag_overlay);
+            
+            stack![main_view, overlay].into()
+        } else {
+            main_view
+        };
+
         match &self.modal {
-            Modal::None => main_view,
-            Modal::About => stack![main_view, self.view_about_modal()].into(),
-            Modal::Developer => stack![main_view, self.view_developer_modal()].into(),
-            Modal::Error(e) => stack![main_view, Self::view_error_modal(e)].into(),
-            Modal::Processing => stack![main_view, self.view_processing_modal()].into(),
+            Modal::None => content_with_overlay,
+            Modal::About => stack![content_with_overlay, self.view_about_modal()].into(),
+            Modal::Developer => stack![content_with_overlay, self.view_developer_modal()].into(),
+            Modal::Error(e) => stack![content_with_overlay, Self::view_error_modal(e)].into(),
+            Modal::Processing => stack![content_with_overlay, self.view_processing_modal()].into(),
         }
     }
 
@@ -200,35 +263,35 @@ impl RusticSortApp {
 
     fn view_welcome(&self) -> Element<'_, Message> {
         let content = column![
-            Space::with_height(30),
+            Space::with_height(40),
             image(image::Handle::from_bytes(include_bytes!("../../assets/icons/rusticsort-128.png").as_slice()))
-                .width(Length::Fixed(128.0))
-                .height(Length::Fixed(128.0)),
-            Space::with_height(20),
-            text(S.get("app", "name")).size(36).color(Color::from_rgb(0.15, 0.15, 0.2)),
-            Space::with_height(6),
-            text(S.get("app", "tagline")).size(16).color(Color::from_rgb(0.45, 0.48, 0.55)),
-            Space::with_height(20),
-            container(
-                text(S.get("app", "description")).size(13).color(Color::from_rgb(0.4, 0.42, 0.48))
-            ).max_width(460),
+                .width(Length::Fixed(160.0))
+                .height(Length::Fixed(160.0)),
             Space::with_height(30),
-            button(text(S.get("buttons", "get_started")).size(14))
+            text(S.get("app", "name")).size(48).color(Color::from_rgb(0.15, 0.15, 0.2)),
+            Space::with_height(12),
+            text(S.get("app", "tagline")).size(20).color(Color::from_rgb(0.45, 0.48, 0.55)),
+            Space::with_height(30),
+            container(
+                text(S.get("app", "description")).size(17).color(Color::from_rgb(0.4, 0.42, 0.48)).center()
+            ).max_width(550),
+            Space::with_height(40),
+            button(text(S.get("buttons", "get_started")).size(18))
                 .on_press(Message::NextStep)
                 .style(styles::primary_button)
-                .padding([12, 32]),
-            Space::with_height(16),
+                .padding([14, 40]),
+            Space::with_height(24),
             // Website & About icons
             row![
-                button(text("[ Website ]").size(12))
+                button(text("[ Website ]").size(14))
                     .on_press(Message::OpenWebsite)
                     .style(styles::outline_button)
-                    .padding([7, 14]),
-                Space::with_width(10),
-                button(text("[ About ]").size(12))
+                    .padding([8, 16]),
+                Space::with_width(12),
+                button(text("[ About ]").size(14))
                     .on_press(Message::ShowAbout)
                     .style(styles::outline_button)
-                    .padding([7, 14]),
+                    .padding([8, 16]),
             ]
             .align_y(Alignment::Center),
             Space::with_height(Length::Fill),
@@ -248,30 +311,30 @@ impl RusticSortApp {
 
         let content = column![
             self.view_step_indicator(1),
-            Space::with_height(20),
-            text(S.get("steps", "step1_title")).size(22).color(Color::from_rgb(0.15, 0.15, 0.2)),
-            Space::with_height(8),
-            text(S.get("steps", "step1_desc")).size(13).color(Color::from_rgb(0.4, 0.42, 0.48)),
-            Space::with_height(20),
+            Space::with_height(30),
+            text(S.get("steps", "step1_title")).size(30).color(Color::from_rgb(0.15, 0.15, 0.2)),
+            Space::with_height(12),
+            text(S.get("steps", "step1_desc")).size(16).color(Color::from_rgb(0.4, 0.42, 0.48)),
+            Space::with_height(40),
             container(
                 column![
-                    text("Current Source:").size(12).color(Color::from_rgb(0.4, 0.4, 0.5)),
-                    Space::with_height(6),
+                    text("Current Source Directory:").size(16).color(Color::from_rgb(0.4, 0.4, 0.5)),
+                    Space::with_height(10),
                     row![
-                        container(text(source_text).size(13))
-                            .padding([10, 14])
+                        container(text(source_text).size(16))
+                            .padding([14, 20])
                             .width(Length::Fill)
                             .style(styles::card_container),
-                        button(text(S.get("buttons", "browse")).size(12))
+                        Space::with_width(14),
+                        button(text(S.get("buttons", "browse")).size(16))
                             .on_press(Message::SelectSourceDir)
                             .style(styles::outline_button)
-                            .padding([9, 16]),
+                            .padding([12, 24]),
                     ]
-                    .spacing(10)
                     .align_y(Alignment::Center)
                 ]
-            ).max_width(500),
-            Space::with_height(30),
+            ).max_width(600),
+            Space::with_height(50),
             self.view_nav_buttons(false, true),
         ]
         .align_x(Alignment::Center)
