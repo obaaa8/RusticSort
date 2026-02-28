@@ -368,8 +368,8 @@ impl RusticSortApp {
         if let Some(source) = &self.source_dir {
             let files = scan_directory(source);
             for file in &files {
-                if let Some(ext) = file.extension().and_then(|e| e.to_str()) {
-                    if let Some(rule) = enabled_rules.iter().find(|r| r.extension.eq_ignore_ascii_case(ext)) {
+                if let Some(ext) = file.extension().and_then(|e| e.to_str())
+                    && let Some(rule) = enabled_rules.iter().find(|r| r.extension.eq_ignore_ascii_case(ext)) {
                         let name = file.file_name().unwrap_or_default().to_string_lossy().to_string();
                         if match_count < 15 {
                             preview_items = preview_items.push(
@@ -379,7 +379,6 @@ impl RusticSortApp {
                         }
                         match_count += 1;
                     }
-                }
             }
         }
 

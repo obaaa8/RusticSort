@@ -94,20 +94,18 @@ pub fn undo_moves(records: &[MoveRecord]) -> std::io::Result<usize> {
     // Restore files in reverse order
     for record in records.iter().rev() {
         if record.new_path.exists() {
-            if let Some(parent) = record.original_path.parent() {
-                if !parent.exists() {
+            if let Some(parent) = record.original_path.parent()
+                && !parent.exists() {
                     fs::create_dir_all(parent)?;
                 }
-            }
             fs::rename(&record.new_path, &record.original_path)?;
             restored += 1;
 
             // Mark created directories for cleanup
-            if let Some(dir) = &record.created_dir {
-                if !dirs_to_remove.contains(dir) {
+            if let Some(dir) = &record.created_dir
+                && !dirs_to_remove.contains(dir) {
                     dirs_to_remove.push(dir.clone());
                 }
-            }
         }
     }
 
