@@ -18,9 +18,6 @@ pub enum Message {
 
     SelectSourceDir,
     SourceDirSelected(Option<std::path::PathBuf>),
-    FileDropped(std::path::PathBuf),
-    FileHovered,
-    FileLeft,
 
     AddRule,
     ToggleRule(usize, bool),
@@ -59,7 +56,6 @@ pub struct RusticSortApp {
     rules: Vec<SortingRule>,
     move_records: Vec<MoveRecord>,
     modal: Modal,
-    is_dragging: bool,
 }
 
 impl Default for RusticSortApp {
@@ -74,7 +70,6 @@ impl Default for RusticSortApp {
             rules,
             move_records: Vec::new(),
             modal: Modal::None,
-            is_dragging: false,
         }
     }
 }
@@ -86,32 +81,6 @@ impl RusticSortApp {
 
     pub fn title(&self) -> String {
         S.get("app", "name").to_string()
-    }
-
-    pub fn subscription(&self) -> iced::Subscription<Message> {
-        iced::event::listen_with(|event, _status, _window_id| {
-            if let iced::Event::Window(win_ev) = event {
-                // VERBOSE LOGGING
-                println!("Iced Window Event captured: {:?}", win_ev);
-                match win_ev {
-                    iced::window::Event::FileDropped(path) => {
-                        println!("==> FileDropped({:?})", path);
-                        Some(Message::FileDropped(path))
-                    }
-                    iced::window::Event::FileHovered(path) => {
-                        println!("==> FileHovered({:?})", path);
-                        Some(Message::FileHovered)
-                    }
-                    iced::window::Event::FilesHoveredLeft => {
-                        println!("==> FilesHoveredLeft");
-                        Some(Message::FileLeft)
-                    }
-                    _ => None,
-                }
-            } else {
-                None
-            }
-        })
     }
 
     pub fn update(&mut self, message: Message) -> Task<Message> {
@@ -128,16 +97,6 @@ impl RusticSortApp {
                 )
             }
             Message::SourceDirSelected(p) => { if let Some(path) = p { self.source_dir = Some(path); } Task::none() }
-            Message::FileHovered => { self.is_dragging = true; Task::none() }
-            Message::FileLeft => { self.is_dragging = false; Task::none() }
-            Message::FileDropped(path) => { 
-                self.is_dragging = false;
-                if path.is_dir() { 
-                    self.source_dir = Some(path);
-                    if self.step == 0 { self.step = 1; }
-                } 
-                Task::none() 
-            }
 
             Message::AddRule => { self.rules.push(SortingRule::new("", "", "")); Task::none() }
             Message::ToggleRule(i, v) => { if let Some(r) = self.rules.get_mut(i) { r.enabled = v; } Task::none() }
@@ -228,34 +187,12 @@ impl RusticSortApp {
             _ => self.view_welcome(),
         };
 
-        let content_with_overlay: Element<Message> = if self.is_dragging {
-            let overlay = container(
-                column![
-                    text("🗂️").size(80).center(),
-                    Space::with_height(20),
-                    text(S.get("messages", "ready")).size(48).color(Color::from_rgb(0.18, 0.55, 0.82)).center(),
-                    Space::with_height(10),
-                    text("Drop your folder anywhere to analyze it").size(22).color(Color::from_rgb(0.4, 0.45, 0.5)).center(),
-                ]
-                .align_x(Alignment::Center)
-            )
-            .width(Length::Fill)
-            .height(Length::Fill)
-            .center_x(Length::Fill)
-            .center_y(Length::Fill)
-            .style(styles::drag_overlay);
-            
-            stack![main_view, overlay].into()
-        } else {
-            main_view
-        };
-
         match &self.modal {
-            Modal::None => content_with_overlay,
-            Modal::About => stack![content_with_overlay, self.view_about_modal()].into(),
-            Modal::Developer => stack![content_with_overlay, self.view_developer_modal()].into(),
-            Modal::Error(e) => stack![content_with_overlay, Self::view_error_modal(e)].into(),
-            Modal::Processing => stack![content_with_overlay, self.view_processing_modal()].into(),
+            Modal::None => main_view,
+            Modal::About => stack![main_view, self.view_about_modal()].into(),
+            Modal::Developer => stack![main_view, self.view_developer_modal()].into(),
+            Modal::Error(e) => stack![main_view, Self::view_error_modal(e)].into(),
+            Modal::Processing => stack![main_view, self.view_processing_modal()].into(),
         }
     }
 
