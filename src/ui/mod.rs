@@ -177,7 +177,7 @@ impl RusticSortApp {
         }
     }
 
-    pub fn view(&self) -> Element<Message> {
+    pub fn view(&self) -> Element<'_, Message> {
         let main_view: Element<Message> = match self.step {
             0 => self.view_welcome(),
             1 => self.view_source(),
@@ -198,7 +198,7 @@ impl RusticSortApp {
 
     // ========== STEP 0: Welcome ==========
 
-    fn view_welcome(&self) -> Element<Message> {
+    fn view_welcome(&self) -> Element<'_, Message> {
         let content = column![
             Space::with_height(30),
             image(image::Handle::from_bytes(include_bytes!("../../assets/icons/rusticsort-128.png").as_slice()))
@@ -241,7 +241,7 @@ impl RusticSortApp {
 
     // ========== STEP 1: Source ==========
 
-    fn view_source(&self) -> Element<Message> {
+    fn view_source(&self) -> Element<'_, Message> {
         let source_text = self.source_dir.as_ref()
             .map(|p| p.to_string_lossy().to_string())
             .unwrap_or_else(|| "No directory selected".to_string());
@@ -282,7 +282,7 @@ impl RusticSortApp {
 
     // ========== STEP 2: Rules ==========
 
-    fn view_rules(&self) -> Element<Message> {
+    fn view_rules(&self) -> Element<'_, Message> {
         let enabled_count = self.rules.iter().filter(|r| r.enabled).count();
 
         let col_headers = row![
@@ -355,7 +355,7 @@ impl RusticSortApp {
 
     // ========== STEP 3: Summary ==========
 
-    fn view_summary(&self) -> Element<Message> {
+    fn view_summary(&self) -> Element<'_, Message> {
         let source_text = self.source_dir.as_ref()
             .map(|p| p.to_string_lossy().to_string())
             .unwrap_or_else(|| "Not selected".to_string());
@@ -450,7 +450,7 @@ impl RusticSortApp {
 
     // ========== STEP 4: Result ==========
 
-    fn view_result(&self) -> Element<Message> {
+    fn view_result(&self) -> Element<'_, Message> {
         let count = self.move_records.len();
 
         let mut file_list = column![].spacing(2);
@@ -512,7 +512,7 @@ impl RusticSortApp {
 
     // ========== Shared: Step Indicator ==========
 
-    fn view_step_indicator(&self, current: usize) -> Element<Message> {
+    fn view_step_indicator(&self, current: usize) -> Element<'_, Message> {
         let steps = ["Source", "Rules", "Organize"];
         let mut indicators = row![].spacing(4).align_y(Alignment::Center);
 
@@ -544,7 +544,7 @@ impl RusticSortApp {
         container(indicators).center_x(Length::Fill).padding([8, 0]).into()
     }
 
-    fn view_nav_buttons(&self, show_back: bool, show_next: bool) -> Element<Message> {
+    fn view_nav_buttons(&self, show_back: bool, show_next: bool) -> Element<'_, Message> {
         let mut nav = row![].spacing(10).width(Length::Fill);
 
         if show_back {

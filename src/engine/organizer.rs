@@ -50,33 +50,36 @@ pub fn get_safe_destination_path(target_dir: &Path, original_name: &str, extensi
 /// Returns Ok(Some(MoveRecord)) if moved, Ok(None) if no rule matched.
 /// Tracks whether a new directory was created for undo support.
 pub fn organize_file(file_path: &Path, source_dir: &Path, rules: &[SortingRule]) -> std::io::Result<Option<MoveRecord>> {
-    if let Some(ext) = file_path.extension().and_then(|e| e.to_str()) {
-        if let Some(target_folder_name) = match_rule(ext, rules) {
-            let target_dir = source_dir.join(target_folder_name);
+    if let Some(target_folder_name) = file_path
+        .extension()
+        .and_then(|e| e.to_str())
+        .and_then(|ext| match_rule(ext, rules))
+    {
+        let target_dir = source_dir.join(target_folder_name);
 
-            // Track if we created this directory
-            let created_dir = if !target_dir.exists() {
-                fs::create_dir_all(&target_dir)?;
-                Some(target_dir.clone())
-            } else {
-                None
-            };
+        // Track if we created this directory
+        let created_dir = if !target_dir.exists() {
+            fs::create_dir_all(&target_dir)?;
+            Some(target_dir.clone())
+        } else {
+            None
+        };
 
-            let original_name = file_path
-                .file_stem()
-                .and_then(|s| s.to_str())
-                .unwrap_or("unknown_file");
+        let original_name = file_path
+            .file_stem()
+            .and_then(|s| s.to_str())
+            .unwrap_or("unknown_file");
 
-            let dest_path = get_safe_destination_path(&target_dir, original_name, ext);
+        let ext = file_path.extension().and_then(|e| e.to_str()).unwrap_or("");
+        let dest_path = get_safe_destination_path(&target_dir, original_name, ext);
 
-            fs::rename(file_path, &dest_path)?;
+        fs::rename(file_path, &dest_path)?;
 
-            return Ok(Some(MoveRecord {
-                original_path: file_path.to_path_buf(),
-                new_path: dest_path,
-                created_dir,
-            }));
-        }
+        return Ok(Some(MoveRecord {
+            original_path: file_path.to_path_buf(),
+            new_path: dest_path,
+            created_dir,
+        }));
     }
     Ok(None)
 }
