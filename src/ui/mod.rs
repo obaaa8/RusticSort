@@ -27,8 +27,8 @@ pub enum Message {
     RemoveRule(usize),
     SaveRules,
 
-    StartOrganize,
-    OrganizeCompleted(Result<Vec<MoveRecord>, String>),
+    Process,
+    ProcessComplete(Vec<crate::engine::organizer::MoveRecord>),
     UndoMoves,
     UndoCompleted(Result<usize, String>),
 
@@ -112,7 +112,7 @@ impl RusticSortApp {
                 Task::none()
             }
 
-            Message::StartOrganize => {
+            Message::Process => {
                 if let Some(source) = self.source_dir.clone() {
                     self.modal = Modal::Processing;
                     let rules = self.rules.clone();
@@ -129,7 +129,10 @@ impl RusticSortApp {
                             }
                             Ok(records)
                         },
-                        Message::OrganizeCompleted,
+                        |result| match result {
+                            Ok(records) => Message::ProcessComplete(records),
+                            Err(_e) => Message::ProcessComplete(vec![]), // Fallback map on error
+                        }
                     )
                 } else {
                     self.modal = Modal::Error(S.get("messages", "select_dir_first").to_string());
@@ -137,12 +140,10 @@ impl RusticSortApp {
                 }
             }
 
-            Message::OrganizeCompleted(result) => {
+            Message::ProcessComplete(records) => {
+                self.move_records = records;
                 self.modal = Modal::None;
-                match result {
-                    Ok(records) => { self.move_records = records; self.step = 4; }
-                    Err(e) => { self.modal = Modal::Error(e); }
-                }
+                self.step = 4;
                 Task::none()
             }
 
@@ -397,7 +398,7 @@ impl RusticSortApp {
 
         let start_btn = if match_count > 0 {
             button(text(S.get("buttons", "start_organizing")).size(14))
-                .on_press(Message::StartOrganize)
+                .on_press(Message::Process)
                 .style(styles::primary_button)
                 .padding([10, 28])
         } else {

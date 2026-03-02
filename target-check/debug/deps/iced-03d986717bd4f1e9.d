@@ -1,0 +1,13 @@
+/home/mahmoud/projects/RusticSort/target-check/debug/deps/iced-03d986717bd4f1e9.d: /home/mahmoud/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/iced-0.13.1/src/lib.rs /home/mahmoud/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/iced-0.13.1/src/error.rs /home/mahmoud/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/iced-0.13.1/src/program.rs /home/mahmoud/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/iced-0.13.1/src/application.rs /home/mahmoud/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/iced-0.13.1/src/daemon.rs /home/mahmoud/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/iced-0.13.1/src/settings.rs /home/mahmoud/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/iced-0.13.1/src/time.rs /home/mahmoud/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/iced-0.13.1/src/window.rs /home/mahmoud/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/iced-0.13.1/src/window/icon.rs
+
+/home/mahmoud/projects/RusticSort/target-check/debug/deps/libiced-03d986717bd4f1e9.rmeta: /home/mahmoud/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/iced-0.13.1/src/lib.rs /home/mahmoud/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/iced-0.13.1/src/error.rs /home/mahmoud/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/iced-0.13.1/src/program.rs /home/mahmoud/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/iced-0.13.1/src/application.rs /home/mahmoud/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/iced-0.13.1/src/daemon.rs /home/mahmoud/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/iced-0.13.1/src/settings.rs /home/mahmoud/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/iced-0.13.1/src/time.rs /home/mahmoud/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/iced-0.13.1/src/window.rs /home/mahmoud/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/iced-0.13.1/src/window/icon.rs
+
+/home/mahmoud/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/iced-0.13.1/src/lib.rs:
+/home/mahmoud/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/iced-0.13.1/src/error.rs:
+/home/mahmoud/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/iced-0.13.1/src/program.rs:
+/home/mahmoud/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/iced-0.13.1/src/application.rs:
+/home/mahmoud/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/iced-0.13.1/src/daemon.rs:
+/home/mahmoud/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/iced-0.13.1/src/settings.rs:
+/home/mahmoud/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/iced-0.13.1/src/time.rs:
+/home/mahmoud/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/iced-0.13.1/src/window.rs:
+/home/mahmoud/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/iced-0.13.1/src/window/icon.rs:
